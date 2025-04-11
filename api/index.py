@@ -1,14 +1,23 @@
 from flask import Flask, render_template, request, g, redirect, session
 import sqlite3
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 app = app
 app.secret_key = 'LuanEguh'
 
+# Banco de dados
 def ligarBanco():
-    banco = g._database = sqlite3.connect('contato.db')
-    return banco
+    if 'contato.db' not in g:
+        g._database = sqlite3.connect(os.path.join(os.path.dirname(__file__), '../contato.db'))
+    return g._database
+
+@app.teardown_appcontext
+def fechar_conexao(exception):
+    db = g.pop('_database', None)
+    if db is not None:
+        db.close()
 
 @app.route('/')
 def Home():
